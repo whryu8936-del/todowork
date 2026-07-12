@@ -83,6 +83,17 @@
             <textarea class="detail-edit" id="detail-edit-detail" rows="4" maxlength="500" hidden></textarea>
           </div>
           <div class="form-group">
+            <label for="detail-edit-tags-input">TAG</label>
+            <div class="detail-value detail-tags-view detail-view" id="detail-tags"></div>
+            <div class="detail-edit" id="detail-tags-edit-wrap" hidden>
+              <div class="tag-input-wrap">
+                <div class="tag-selected" id="detail-tag-selected"></div>
+                <input type="text" id="detail-edit-tags-input" placeholder="TAG를 입력하거나 아래에서 선택하세요" maxlength="20" autocomplete="off">
+              </div>
+              <div class="tag-suggestions" id="detail-tag-suggestions"></div>
+            </div>
+          </div>
+          <div class="form-group">
             <label for="detail-edit-date">일자</label>
             <p class="detail-value detail-view" id="detail-date"></p>
             <input type="date" class="detail-edit" id="detail-edit-date" hidden>
@@ -114,6 +125,14 @@
           <textarea id="task-detail" rows="4" placeholder="할 일에 대한 상세 내용을 입력하세요" maxlength="500"></textarea>
         </div>
         <div class="form-group">
+          <label for="task-tags-input">TAG</label>
+          <div class="tag-input-wrap" id="task-tag-input-wrap">
+            <div class="tag-selected" id="task-tag-selected"></div>
+            <input type="text" id="task-tags-input" placeholder="TAG를 입력하거나 아래에서 선택하세요" maxlength="20" autocomplete="off">
+          </div>
+          <div class="tag-suggestions" id="task-tag-suggestions" aria-label="TAG 예시"></div>
+        </div>
+        <div class="form-group">
           <label for="task-date">일자</label>
           <input type="date" id="task-date" required>
         </div>
@@ -125,6 +144,8 @@
     </div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

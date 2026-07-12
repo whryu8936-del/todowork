@@ -31,12 +31,35 @@ const detailForm = document.getElementById("detail-form");
 const taskForm = document.getElementById("task-form");
 const taskTitleInput = document.getElementById("task-title");
 const taskDetailInput = document.getElementById("task-detail");
+const taskTagsInput = document.getElementById("task-tags-input");
+const taskTagSelectedEl = document.getElementById("task-tag-selected");
+const taskTagSuggestionsEl = document.getElementById("task-tag-suggestions");
 const taskDateInput = document.getElementById("task-date");
+
+const TAG_PRESETS = ["개인", "업무", "긴급", "중요", "학습", "건강", "취미", "쇼핑", "여행", "기타"];
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBSE1eH5ZrB_K4UEVoXC92jzb2e_UWrQe4",
+  authDomain: "todowork-1af26.firebaseapp.com",
+  databaseURL: "https://todowork-1af26-default-rtdb.firebaseio.com",
+  projectId: "todowork-1af26",
+  storageBucket: "todowork-1af26.firebasestorage.app",
+  messagingSenderId: "410637187154",
+  appId: "1:410637187154:web:977d3c438bff17ce34c78b",
+  measurementId: "G-CPJYSN3ZMF",
+};
+
+firebase.initializeApp(firebaseConfig);
+const tasksRef = firebase.database().ref("tasks");
 const detailTitleEl = document.getElementById("detail-title");
 const detailDetailEl = document.getElementById("detail-detail");
+const detailTagsEl = document.getElementById("detail-tags");
 const detailDateEl = document.getElementById("detail-date");
 const detailEditTitleInput = document.getElementById("detail-edit-title");
 const detailEditDetailInput = document.getElementById("detail-edit-detail");
+const detailEditTagsInput = document.getElementById("detail-edit-tags-input");
+const detailTagSelectedEl = document.getElementById("detail-tag-selected");
+const detailTagSuggestionsEl = document.getElementById("detail-tag-suggestions");
 const detailEditDateInput = document.getElementById("detail-edit-date");
 const detailModalTitleEl = document.getElementById("detail-modal-title");
 
@@ -47,6 +70,144 @@ let currentView = "list";
 let calendarYear = new Date().getFullYear();
 let calendarMonth = new Date().getMonth();
 let listFilter = "all";
+
+function normalizeTag(tag) {
+  return tag.trim();
+}
+
+function createTagEditor({ selectedEl, suggestionsEl, inputEl }) {
+  let tags = [];
+
+  function hasTag(tag) {
+    const normalized = normalizeTag(tag);
+    return normalized !== "" && tags.includes(normalized);
+  }
+
+  function renderChips() {
+    selectedEl.innerHTML = "";
+    tags.forEach((tag) => {
+      const chip = document.createElement("span");
+      chip.className = "tag-chip";
+
+      const label = document.createElement("span");
+      label.textContent = tag;
+
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "tag-chip-remove";
+      removeBtn.setAttribute("aria-label", `${tag} TAG 제거`);
+      removeBtn.textContent = "×";
+      removeBtn.addEventListener("click", () => removeTag(tag));
+
+      chip.appendChild(label);
+      chip.appendChild(removeBtn);
+      selectedEl.appendChild(chip);
+    });
+  }
+
+  function renderSuggestions() {
+    suggestionsEl.innerHTML = "";
+    TAG_PRESETS.forEach((tag) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "tag-suggestion";
+      btn.textContent = tag;
+      btn.classList.toggle("selected", hasTag(tag));
+      btn.addEventListener("click", () => {
+        if (hasTag(tag)) {
+          removeTag(tag);
+        } else {
+          addTag(tag);
+        }
+        inputEl.focus();
+      });
+      suggestionsEl.appendChild(btn);
+    });
+  }
+
+  function render() {
+    renderChips();
+    renderSuggestions();
+  }
+
+  function addTag(tag) {
+    const normalized = normalizeTag(tag);
+    if (!normalized || hasTag(normalized)) return false;
+    tags.push(normalized);
+    render();
+    return true;
+  }
+
+  function removeTag(tag) {
+    tags = tags.filter((t) => t !== tag);
+    render();
+  }
+
+  function reset(newTags = []) {
+    tags = [...newTags];
+    inputEl.value = "";
+    render();
+  }
+
+  function commitPending() {
+    const pending = normalizeTag(inputEl.value);
+    if (!pending) return false;
+    const added = addTag(pending);
+    if (added) inputEl.value = "";
+    return added;
+  }
+
+  function getTagsForSubmit() {
+    commitPending();
+    return [...tags];
+  }
+
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      commitPending();
+    } else if (e.key === "Backspace" && !inputEl.value && tags.length > 0) {
+      removeTag(tags[tags.length - 1]);
+    }
+  });
+
+  inputEl.addEventListener("blur", () => {
+    commitPending();
+  });
+
+  return { reset, render, getTagsForSubmit };
+}
+
+const taskTagEditor = createTagEditor({
+  selectedEl: taskTagSelectedEl,
+  suggestionsEl: taskTagSuggestionsEl,
+  inputEl: taskTagsInput,
+});
+
+const detailTagEditor = createTagEditor({
+  selectedEl: detailTagSelectedEl,
+  suggestionsEl: detailTagSuggestionsEl,
+  inputEl: detailEditTagsInput,
+});
+
+function renderDetailTagsView(task) {
+  detailTagsEl.innerHTML = "";
+  const taskTags = task.tags || [];
+
+  if (taskTags.length === 0) {
+    detailTagsEl.textContent = "TAG 없음";
+    detailTagsEl.classList.add("empty");
+    return;
+  }
+
+  detailTagsEl.classList.remove("empty");
+  taskTags.forEach((tag) => {
+    const tagSpan = document.createElement("span");
+    tagSpan.className = "task-tag";
+    tagSpan.textContent = tag;
+    detailTagsEl.appendChild(tagSpan);
+  });
+}
 
 function getTask(id) {
   return tasks.find((t) => t.id === id);
@@ -128,6 +289,14 @@ function createTaskElement(task) {
   dateSpan.textContent = formatDateLabel(task.date);
 
   meta.appendChild(dateSpan);
+
+  (task.tags || []).forEach((tag) => {
+    const tagSpan = document.createElement("span");
+    tagSpan.className = "task-tag";
+    tagSpan.textContent = tag;
+    meta.appendChild(tagSpan);
+  });
+
   body.appendChild(title);
   body.appendChild(detail);
   body.appendChild(meta);
@@ -292,6 +461,7 @@ function changeCalendarMonth(delta) {
 
 function openModal() {
   taskForm.reset();
+  taskTagEditor.reset();
   taskDateInput.value = getTodayString();
   modalOverlay.hidden = false;
   taskTitleInput.focus();
@@ -300,6 +470,7 @@ function openModal() {
 function closeModal() {
   modalOverlay.hidden = true;
   taskForm.reset();
+  taskTagEditor.reset();
 }
 
 function setDetailEditMode(editing) {
@@ -317,6 +488,8 @@ function setDetailEditMode(editing) {
   detailCloseBtn.textContent = editing ? "취소" : "닫기";
 
   if (editing) {
+    const task = getTask(currentDetailTaskId);
+    if (task) detailTagEditor.reset(task.tags || []);
     detailEditTitleInput.focus();
   }
 }
@@ -325,11 +498,13 @@ function populateDetailModal(task) {
   detailTitleEl.textContent = task.title;
   detailDetailEl.textContent = task.detail || "상세 내용 없음";
   detailDetailEl.classList.toggle("empty", !task.detail);
+  renderDetailTagsView(task);
   detailDateEl.textContent = formatDateLabel(task.date);
 
   detailEditTitleInput.value = task.title;
   detailEditDetailInput.value = task.detail;
   detailEditDateInput.value = task.date;
+  detailTagEditor.reset(task.tags || []);
 
   detailCompleteBtn.textContent = task.completed ? "미완료" : "완료";
   detailCompleteBtn.classList.toggle("btn-warning", task.completed);
@@ -370,19 +545,27 @@ function saveDetailEdit() {
   const title = detailEditTitleInput.value.trim();
   const detail = detailEditDetailInput.value.trim();
   const date = detailEditDateInput.value;
+  const tags = detailTagEditor.getTagsForSubmit();
 
   if (!title || !date) {
     detailEditTitleInput.focus();
     return;
   }
 
-  task.title = title;
-  task.detail = detail;
-  task.date = date;
+  tasksRef
+    .child(currentDetailTaskId)
+    .update({
+      task: title,
+      description: detail,
+      date,
+      tag: tags,
+    })
+    .catch((error) => {
+      console.error("Firebase 할 일 수정 실패:", error);
+      alert("할 일 수정을 Firebase에 저장하지 못했습니다.");
+    });
 
   setDetailEditMode(false);
-  populateDetailModal(task);
-  render();
 }
 
 function handleDetailEditClick() {
@@ -408,34 +591,72 @@ function toggleDetailComplete() {
   refreshDetailModal();
 }
 
-function addTask(title, detail, date) {
-  const task = {
-    id: crypto.randomUUID(),
-    title: title.trim(),
-    detail: detail.trim(),
+async function saveTaskToFirebase(title, detail, date, tags) {
+  const snapshot = await tasksRef.push({
+    task: title.trim(),
+    description: detail.trim(),
+    tag: tags,
     date,
     completed: false,
     createdAt: Date.now(),
-  };
+  });
+  return snapshot.key;
+}
 
-  tasks.unshift(task);
-  render();
+async function addTask(title, detail, date, tags = []) {
+  await saveTaskToFirebase(title, detail, date, tags);
+}
+
+function mapFirebaseTask(id, data) {
+  if (!data) return null;
+
+  return {
+    id,
+    title: data.task || "",
+    detail: data.description || "",
+    tags: Array.isArray(data.tag) ? data.tag : data.tag ? [data.tag] : [],
+    date: data.date || "",
+    completed: Boolean(data.completed),
+    createdAt: data.createdAt || 0,
+  };
+}
+
+function subscribeToTasks() {
+  tasksRef.on(
+    "value",
+    (snapshot) => {
+      const data = snapshot.val();
+      tasks = data
+        ? Object.entries(data)
+            .map(([id, taskData]) => mapFirebaseTask(id, taskData))
+            .filter(Boolean)
+        : [];
+      render();
+    },
+    (error) => {
+      console.error("Firebase 할 일 불러오기 실패:", error);
+    }
+  );
 }
 
 function toggleComplete(id) {
   const task = tasks.find((t) => t.id === id);
-  if (task) {
-    task.completed = !task.completed;
-    render();
-  }
+  if (!task) return;
+
+  tasksRef.child(id).update({ completed: !task.completed }).catch((error) => {
+    console.error("Firebase 완료 상태 저장 실패:", error);
+  });
 }
 
 function deleteTask(id) {
   if (currentDetailTaskId === id) {
     closeDetailModal();
   }
-  tasks = tasks.filter((t) => t.id !== id);
-  render();
+
+  tasksRef.child(id).remove().catch((error) => {
+    console.error("Firebase 할 일 삭제 실패:", error);
+    alert("할 일을 Firebase에서 삭제하지 못했습니다.");
+  });
 }
 
 listViewBtn.addEventListener("click", () => setView("list"));
@@ -474,18 +695,34 @@ document.addEventListener("keydown", (e) => {
   else if (!modalOverlay.hidden) closeModal();
 });
 
-taskForm.addEventListener("submit", (e) => {
+taskForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const title = taskTitleInput.value;
   const detail = taskDetailInput.value;
   const date = taskDateInput.value;
+  const tags = taskTagEditor.getTagsForSubmit();
+  const submitBtn = taskForm.querySelector('button[type="submit"]');
 
   if (!title.trim() || !date) return;
 
-  addTask(title, detail, date);
-  closeModal();
+  submitBtn.disabled = true;
+  submitBtn.textContent = "저장 중...";
+
+  try {
+    await addTask(title, detail, date, tags);
+    closeModal();
+  } catch (error) {
+    console.error("Firebase 저장 실패:", error);
+    alert("할 일을 Firebase에 저장하지 못했습니다. 다시 시도해 주세요.");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "추가하기";
+  }
 });
 
+taskTagEditor.render();
+detailTagEditor.render();
 formatTodayHeader();
+subscribeToTasks();
 setView("list");
