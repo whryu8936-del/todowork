@@ -7,6 +7,128 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- 로그인 화면 -->
+  <div id="login-screen" class="screen auth-screen">
+    <div class="auth-card">
+      <h1 class="auth-title">할 일 관리</h1>
+      <p class="auth-subtitle">로그인 후 이용해 주세요</p>
+      <form id="login-form" class="auth-form">
+        <div class="form-group">
+          <label for="login-name">사용자 이름</label>
+          <input type="text" id="login-name" placeholder="사용자 이름을 입력하세요" required maxlength="50" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="login-password">패스워드</label>
+          <input type="password" id="login-password" placeholder="패스워드를 입력하세요" required maxlength="100" autocomplete="current-password">
+        </div>
+        <p class="auth-error" id="login-error" hidden></p>
+        <button type="submit" class="btn btn-primary">로그인</button>
+      </form>
+      <button type="button" class="btn btn-link" id="go-admin-btn">사용자 관리 페이지로 이동</button>
+    </div>
+  </div>
+
+  <!-- 사용자 관리 화면 -->
+  <div id="admin-screen" class="screen auth-screen" hidden>
+    <div class="auth-card admin-card">
+      <h1 class="auth-title">사용자 관리</h1>
+
+      <div id="admin-login-panel">
+        <p class="auth-subtitle">관리자 계정으로 로그인하세요</p>
+        <form id="admin-login-form" class="auth-form">
+          <div class="form-group">
+            <label for="admin-login-name">관리자 이름</label>
+            <input type="text" id="admin-login-name" value="administrator" readonly>
+          </div>
+          <div class="form-group">
+            <label for="admin-login-password">패스워드</label>
+            <input type="password" id="admin-login-password" placeholder="관리자 패스워드를 입력하세요" required maxlength="100" autocomplete="current-password">
+          </div>
+          <p class="auth-error" id="admin-login-error" hidden></p>
+          <button type="submit" class="btn btn-primary">관리자 로그인</button>
+        </form>
+      </div>
+
+      <div id="admin-management-panel" hidden>
+        <section class="admin-section admin-account-section">
+          <h2>관리자 계정</h2>
+          <form id="admin-password-form" class="admin-inline-form">
+            <div class="form-group">
+              <label for="admin-account-name">이름</label>
+              <input type="text" id="admin-account-name" value="administrator" readonly>
+            </div>
+            <div class="form-group">
+              <label for="admin-account-password">패스워드</label>
+              <input type="text" id="admin-account-password" required maxlength="100">
+            </div>
+            <button type="submit" class="btn btn-secondary">패스워드 저장</button>
+          </form>
+        </section>
+
+        <section class="admin-section">
+          <div class="admin-section-header">
+            <h2>등록된 사용자</h2>
+            <button type="button" class="btn btn-primary btn-sm" id="open-add-user-btn">+ 신규 사용자 추가</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>번호</th>
+                  <th>이름</th>
+                  <th>패스워드</th>
+                  <th>생성된 시간</th>
+                  <th>접속횟수</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody id="admin-user-list"></tbody>
+            </table>
+          </div>
+          <p class="empty-message" id="admin-user-empty">등록된 사용자가 없습니다.</p>
+        </section>
+
+        <button type="button" class="btn btn-secondary" id="admin-logout-btn">관리자 로그아웃</button>
+      </div>
+
+      <button type="button" class="btn btn-link" id="back-to-login-btn">로그인 화면으로 돌아가기</button>
+    </div>
+  </div>
+
+  <!-- 사용자 추가/수정 모달 -->
+  <div class="modal-overlay" id="user-modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-labelledby="user-modal-title" aria-modal="true">
+      <div class="modal-header">
+        <h2 id="user-modal-title">신규 사용자 추가</h2>
+        <button type="button" class="btn-close" id="close-user-modal-btn" aria-label="닫기">&times;</button>
+      </div>
+      <form id="user-form">
+        <div class="form-group">
+          <label for="user-form-name">이름</label>
+          <input type="text" id="user-form-name" required maxlength="50">
+        </div>
+        <div class="form-group">
+          <label for="user-form-password">패스워드</label>
+          <input type="text" id="user-form-password" required maxlength="100">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="cancel-user-modal-btn">취소</button>
+          <button type="submit" class="btn btn-primary">저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 메인 앱 -->
+  <div id="main-app" hidden>
+    <div class="user-session-bar">
+      <div class="user-session-info">
+        <p class="user-session-name" id="logged-in-user"></p>
+        <p class="user-session-time" id="logged-in-time"></p>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" id="logout-btn">로그아웃</button>
+    </div>
+
   <div class="app">
     <header class="header">
       <h1>할 일 관리</h1>
@@ -143,9 +265,11 @@
       </form>
     </div>
   </div>
+  </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <script src="auth.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

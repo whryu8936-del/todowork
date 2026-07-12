@@ -38,18 +38,6 @@ const taskDateInput = document.getElementById("task-date");
 
 const TAG_PRESETS = ["개인", "업무", "긴급", "중요", "학습", "건강", "취미", "쇼핑", "여행", "기타"];
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBSE1eH5ZrB_K4UEVoXC92jzb2e_UWrQe4",
-  authDomain: "todowork-1af26.firebaseapp.com",
-  databaseURL: "https://todowork-1af26-default-rtdb.firebaseio.com",
-  projectId: "todowork-1af26",
-  storageBucket: "todowork-1af26.firebasestorage.app",
-  messagingSenderId: "410637187154",
-  appId: "1:410637187154:web:977d3c438bff17ce34c78b",
-  measurementId: "G-CPJYSN3ZMF",
-};
-
-firebase.initializeApp(firebaseConfig);
 const tasksRef = firebase.database().ref("tasks");
 const detailTitleEl = document.getElementById("detail-title");
 const detailDetailEl = document.getElementById("detail-detail");
@@ -70,6 +58,7 @@ let currentView = "list";
 let calendarYear = new Date().getFullYear();
 let calendarMonth = new Date().getMonth();
 let listFilter = "all";
+let todoAppInitialized = false;
 
 function normalizeTag(tag) {
   return tag.trim();
@@ -721,8 +710,15 @@ taskForm.addEventListener("submit", async (e) => {
   }
 });
 
-taskTagEditor.render();
-detailTagEditor.render();
-formatTodayHeader();
-subscribeToTasks();
-setView("list");
+function initTodoApp() {
+  if (todoAppInitialized) return;
+  todoAppInitialized = true;
+
+  taskTagEditor.render();
+  detailTagEditor.render();
+  formatTodayHeader();
+  subscribeToTasks();
+  setView("list");
+}
+
+window.initTodoApp = initTodoApp;

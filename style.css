@@ -787,6 +787,215 @@ body {
   display: none;
 }
 
+.detail-view[hidden] {
+  display: none;
+}
+
+/* 로그인 / 사용자 관리 */
+.screen[hidden] {
+  display: none;
+}
+
+.auth-screen {
+  min-height: calc(100vh - 72px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 28px 24px 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+
+.admin-card {
+  max-width: 960px;
+}
+
+.auth-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.auth-subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  margin-bottom: 20px;
+}
+
+.auth-form {
+  margin-bottom: 12px;
+}
+
+.auth-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+
+.auth-error[hidden] {
+  display: none;
+}
+
+.btn-link {
+  width: 100%;
+  margin-top: 8px;
+  background: transparent;
+  color: var(--primary);
+  border: none;
+  box-shadow: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 10px;
+}
+
+.btn-link:hover {
+  background: #eef2ff;
+}
+
+.btn-sm {
+  width: auto;
+  min-width: auto;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+}
+
+.btn-danger {
+  color: #dc2626;
+}
+
+.btn-danger:hover {
+  background: #fee2e2;
+}
+
+input[readonly] {
+  background: #f1f5f9;
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+#main-app {
+  margin: 0 auto;
+}
+
+#main-app > .user-session-bar,
+#main-app > .app {
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#main-app > .app.calendar-mode {
+  max-width: 900px;
+}
+
+.user-session-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.user-session-info {
+  min-width: 0;
+}
+
+.user-session-bar .btn-sm {
+  flex-shrink: 0;
+}
+
+.user-session-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.user-session-time {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.admin-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.admin-account-section {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.admin-section h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.admin-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-section-header h2 {
+  margin-bottom: 0;
+}
+
+.admin-inline-form {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.admin-table th {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: var(--bg);
+}
+
+.admin-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+#user-form {
+  padding: 20px;
+}
+
 @media (max-width: 480px) {
   .header h1 {
     font-size: 1.5rem;
@@ -809,5 +1018,18 @@ body {
   .btn-filter {
     font-size: 0.72rem;
     padding: 8px 4px;
+  }
+
+  .admin-card {
+    padding: 20px 16px;
+  }
+
+  .admin-table {
+    font-size: 0.78rem;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 8px 6px;
   }
 }
