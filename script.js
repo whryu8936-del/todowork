@@ -1,5 +1,3 @@
-const STORAGE_KEY = "todo-app-tasks";
-
 const todayLabelEl = document.getElementById("today-label");
 const todayListEl = document.getElementById("today-list");
 const allListEl = document.getElementById("all-list");
@@ -42,26 +40,13 @@ const detailEditDetailInput = document.getElementById("detail-edit-detail");
 const detailEditDateInput = document.getElementById("detail-edit-date");
 const detailModalTitleEl = document.getElementById("detail-modal-title");
 
-let tasks = loadTasks();
+let tasks = [];
 let currentDetailTaskId = null;
 let isDetailEditMode = false;
 let currentView = "list";
 let calendarYear = new Date().getFullYear();
 let calendarMonth = new Date().getMonth();
 let listFilter = "all";
-
-function loadTasks() {
-  try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveTasks() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-}
 
 function getTask(id) {
   return tasks.find((t) => t.id === id);
@@ -395,7 +380,6 @@ function saveDetailEdit() {
   task.detail = detail;
   task.date = date;
 
-  saveTasks();
   setDetailEditMode(false);
   populateDetailModal(task);
   render();
@@ -435,7 +419,6 @@ function addTask(title, detail, date) {
   };
 
   tasks.unshift(task);
-  saveTasks();
   render();
 }
 
@@ -443,7 +426,6 @@ function toggleComplete(id) {
   const task = tasks.find((t) => t.id === id);
   if (task) {
     task.completed = !task.completed;
-    saveTasks();
     render();
   }
 }
@@ -453,7 +435,6 @@ function deleteTask(id) {
     closeDetailModal();
   }
   tasks = tasks.filter((t) => t.id !== id);
-  saveTasks();
   render();
 }
 
